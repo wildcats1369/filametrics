@@ -1,0 +1,20 @@
+{
+    "name": "wildcats1369/filametrics",
+    "description": "Access multiple GA account in one location",
+    "type": "project",
+    "require": {
+        "bezhansalleh/filament-google-analytics": "dev-main"
+    },
+    "autoload": {
+        "psr-4": {
+            "Wildcats1369\\Filametrics\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "MRR",
+            "email": "wildcats1369@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}
