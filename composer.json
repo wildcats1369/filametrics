@@ -3,11 +3,19 @@
     "description": "Access multiple GA account in one location",
     "type": "project",
     "require": {
-        "bezhansalleh/filament-google-analytics": "dev-main"
+        "bezhansalleh/filament-google-analytics": "dev-main",
+        "spatie/laravel-package-tools": "^1.19"
     },
     "autoload": {
         "psr-4": {
-            "Wildcats1369\\Filametrics\\": "src/"
+            "wildcats1369\\Filametrics\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "wildcats1369\\Filametrics\\Providers\\FilametricsServiceProvider"
+            ]
         }
     },
     "authors": [

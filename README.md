@@ -1,0 +1,4 @@
+-- Export the policies
+php artisan vendor:publish --tag=policies
+
+https://www.conroyp.com/articles/avoiding-route-filament-admin-auth-login-not-defined
