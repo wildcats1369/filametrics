@@ -1,5 +1,4 @@
 <?php
-
 namespace wildcats1369\Filametrics\Resources;
 
 use Filament\Resources\Resource;
@@ -7,13 +6,13 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use wildcats1369\Filametrics\Models\FilametricsAccount;
+use wildcats1369\Filametrics\Models\FilametricsSite;
 use wildcats1369\Filametrics\Resources\FilametricsAccountResource\Pages;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 
 class FilametricsAccountResource extends Resource implements HasShieldPermissions
 {
-    protected static ?string $model = FilametricsAccount::class;
+    protected static ?string $model = FilametricsSite::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $navigationLabel = 'Accounts';
@@ -23,6 +22,7 @@ class FilametricsAccountResource extends Resource implements HasShieldPermission
 
     public static function form(Form $form): Form
     {
+        $providers = config('filametrics.providers.select');
         return $form->schema([
             Forms\Components\TextInput::make('name')->required(),
             Forms\Components\TextInput::make('label')->required(),
@@ -32,7 +32,10 @@ class FilametricsAccountResource extends Resource implements HasShieldPermission
                     'numeric' => 'Numeric',
                     'upload' => 'Upload',
                 ])->required(),
-            Forms\Components\TextInput::make('provider')->required(),
+            Forms\Components\Select::make('provider')
+                ->options($providers)
+                ->required(),
+            Forms\Components\Hidden::make('filametrics_site_id')->default(fn ($record) => $record ? $record->filametrics_site_id : request()->route('record')),
         ]);
     }
 
@@ -71,11 +74,6 @@ class FilametricsAccountResource extends Resource implements HasShieldPermission
             'delete_any',
             'force_delete',
             'force_delete_any',
-            // 'filametricsAccount:create',
-            // 'filametricsAccount:update',
-            // 'filametricsAccount:delete',
-            // 'filametricsAccount:pagination',
-            // 'filametricsAccount:detail',
         ];
     }
 }

@@ -16,6 +16,7 @@ use wildcats1369\Filametrics\Policies;
 use wildcats1369\Filametrics\Models;
 use Illuminate\Support\Facades\Gate;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin; // Import the Shield plugin
+use Livewire\Livewire;
 
 class FilametricsServiceProvider extends PackageServiceProvider
 {
@@ -26,6 +27,11 @@ class FilametricsServiceProvider extends PackageServiceProvider
             ->hasConfigFile()
             ->hasMigrations()
             ->hasRoute('web');
+    }
+
+    public function getId(): string
+    {
+        return 'filametrics';
     }
 
     public function panel(Panel $panel): Panel
@@ -46,6 +52,11 @@ class FilametricsServiceProvider extends PackageServiceProvider
     public function boot(): void
     {
         parent::boot();
+
+        $this->loadViewsFrom(__DIR__.'/../../resources/views', 'filametrics');
+
+        Livewire::component('filametrics-account-form', \wildcats1369\Filametrics\Http\Livewire\FilametricsAccountForm::class);
+
 
         // Publish the Policies directory
         $this->publishes([

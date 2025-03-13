@@ -22,10 +22,4 @@ class FilametricsSite extends Model
         return $this->hasMany(FilametricsAccount::class, 'site_id');
     }
 
-    protected static function booted()
-    {
-        static::saving(function ($site) {
-            \Log::info('Saving Filametrics Site:', $site->toArray());
-        });
-    }
 }
