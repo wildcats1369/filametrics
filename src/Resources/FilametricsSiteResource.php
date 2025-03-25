@@ -6,11 +6,16 @@ use Filament\Resources\Resource;
 use Filament\Forms;
 use Filament\Tables;
 use wildcats1369\Filametrics\Models\FilametricsSite;
+use wildcats1369\Filametrics\Models\FilametricsAccount;
 use wildcats1369\Filametrics\Resources\FilametricsSiteResource\Pages;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use wildcats1369\Filametrics\Resources\FilametricsSiteResource\RelationManagers\FilametricsAccountRelationManager;
 use Filament\Resources\RelationManagers\RelationGroup;
-use Log;
+use Filament\Forms\Components\Actions\Action;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\TextEntry;
+use wildcats1369\Filametrics\Helpers\Google\Widgets;
+
 
 class FilametricsSiteResource extends Resource implements HasShieldPermissions
 {
@@ -23,16 +28,36 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
     protected static ?int $navigationSort = 1;
 
     public $accounts;
+    public $existing_accounts;
+    public $account_forms;
 
+
+    // public function beforeFill($record): void
+    // {
+    //     $existing_accounts = FilametricsAccount::where('site_id', $record->id)->get()->toArray();
+    //     \Log::info('beforeFill: ', $existing_accounts);
+    //     $this->existing_accounts = $existing_accounts;
+    // }
+
+    /*************  ✨ Codeium Command ⭐  *************/
+    /**
+     * Returns the form schema for the resource.
+     *
+     * @param \Filament\Forms\Form $form
+     * @return \Filament\Forms\Form
+     */
+    /******  81c08c5d-cee1-4fd6-b288-a41780e52470  *******/
     public static function form(Forms\Form $form): Forms\Form
     {
-        return $form->schema([
+
+        $schema = [
             Forms\Components\TextInput::make('domain_name')->required(),
             Forms\Components\TextInput::make('view_id')->label('View ID'),
-            Forms\Components\Toggle::make('is_visible_to_all')->label('Visible to All')->default(false),
-            Forms\Components\Repeater::make('accounts')
-                ->relationship('accounts')
+            // Forms\Components\Toggle::make('is_visible_to_all')->label('Visible to All')->default(false),
+            Forms\Components\Repeater::make('account_forms')
+                // ->relationship('account_forms')
                 ->schema(function (callable $get, callable $set) {
+                    $included = $get('providers') ?? [];
                     $schema = [
                         Forms\Components\Select::make('provider')
                             ->options([
@@ -40,101 +65,62 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
                                 'moz' => 'Moz',
                             ])
                             ->label('Provider')
+                            ->default(fn ($record) => $record->provider)
                             ->reactive()
-                            ->afterStateUpdated(function ($state) use ($set) {
-                                $set('selectedProvider', $state);
-                            }),
-                    ];
-
-                    if ($get('selectedProvider') === 'google') {
-                        $schema[] = Forms\Components\TextInput::make('property_id')
+                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                        // ->disableOptionWhen(fn (string $value): bool => in_array($value, $included))
+                        ,
+                        Forms\Components\TextInput::make('property_id')
                             ->label('Property ID')
-                            ->required();
-                        $schema[] = Forms\Components\FileUpload::make('service_account_credentials_json')
+                            ->required()
+                            ->visible(function ($record, $get) {
+
+                                return $get('provider') === 'google';
+                            }),
+                        Forms\Components\FileUpload::make('service_account_credentials_json')
                             ->label('Service Account Credentials JSON')
-                            ->required();
-                    } elseif ($get('selectedProvider') === 'moz') {
+                            ->required()
+                            ->disk('local')
+                            ->directory('analytics')
+                            ->visible(function ($record, $get) {
+                                return $get('provider') === 'google';
+                            }),
                         $schema[] = Forms\Components\TextInput::make('api_id')
                             ->label('API ID')
-                            ->required();
-                    }
+                            ->required()
+                            ->visible(function ($record, $get) {
+                                return $get('provider') === 'moz';
+                            }),
+
+                    ];
+
 
                     return $schema;
-                })
-                ->label('Accounts')
-                ->collapsed(false),
-            // Forms\Components\HasManyRepeater::make('accounts')
-            //     ->relationship('accounts')
-            //     ->schema([
-            //         Forms\Components\TextInput::make('name')->required(),
-            //         Forms\Components\TextInput::make('label')->required(),
-            //         Forms\Components\TextInput::make('type')->required(),
-            //         Forms\Components\TextInput::make('provider')->nullable(),
-            //     ])
-            //     ->label('Add Account'),
-            // Forms\Components\BelongsToManyMultiSelect::make('accounts')
-            //     ->relationship('filametrics_accounts', 'filametrics_sites'),
-        ]);
+                })->itemLabel(fn (array $state): ?string => $state['provider'] ?? null)
+                ->label('Add Accounts')
+                ->deleteAction(
+                    fn (Action $action) => $action->requiresConfirmation(),
+                )
+
+            ,
+
+        ];
+
+
+        return $form->schema($schema);
     }
-
-    protected function beforeSave(array $data): array
-    {
-        Log::info('mutateFormDataBeforeSave');
-        $transformedAccounts = [];
-
-        foreach ($data['accounts'] as $account) {
-            if ($account['provider'] === 'google') {
-                $transformedAccounts[] = [
-                    'name' => 'property_id',
-                    'label' => 'Property ID',
-                    'type' => 'text_input',
-                    'value' => $account['property_id'],
-                    'provider' => $account['provider'],
-                    'site_id' => $this->record->id,
-                ];
-                $transformedAccounts[] = [
-                    'name' => 'service_account_credentials_json',
-                    'label' => 'Service Account Credentials JSON',
-                    'type' => 'file_upload',
-                    'value' => $account['service_account_credentials_json'],
-                    'provider' => $account['provider'],
-                    'site_id' => $this->record->id,
-                ];
-            } elseif ($account['provider'] === 'moz') {
-                $transformedAccounts[] = [
-                    'name' => 'api_id',
-                    'label' => 'API ID',
-                    'type' => 'text_input',
-                    'value' => $account['api_id'],
-                    'provider' => $account['provider'],
-                    'site_id' => $this->record->id,
-                ];
-            }
-        }
-
-        $data['accounts'] = $transformedAccounts;
-
-        return $data;
-    }
-
-    public function save()
-    {
-        $data = $this->form->getState();
-
-        // Transform accounts data before saving
-        $transformedData = $this->mutateFormDataBeforeSave($data);
-
-        // Clear existing accounts and save transformed data
-        $this->record->accounts()->delete();
-        $this->record->accounts()->createMany($transformedData['accounts']);
-
-        parent::save(); // Call the parent save method
-    }
-
 
     public function updatedSelectedProvider($value)
     {
         $this->selectedProvider = $value;
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                TextEntry::make('domain_name')->label('Domain Name'),
+            ]);
     }
 
     public static function table(Tables\Table $table): Tables\Table
@@ -171,12 +157,12 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
         ];
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            FilametricsAccountRelationManager::class,
-        ];
-    }
+    // public static function getRelations(): array
+    // {
+    //     return [
+    //         FilametricsAccountRelationManager::class,
+    //     ];
+    // }
 
     public static function getPermissionPrefixes(): array
     {
@@ -193,14 +179,40 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
             'delete_any',
             'force_delete',
             'force_delete_any',
-            // 'filametricsSite:create',
-            // 'filametricsSite:update',
-            // 'filametricsSite:delete',
-            // 'filametricsSite:pagination',
-            // 'filametricsSite:detail',
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            Widgets\PageViewsWidget::class,
+            Widgets\VisitorsWidget::class,
+            Widgets\ActiveUsersOneDayWidget::class,
+            Widgets\ActiveUsersSevenDayWidget::class,
+            Widgets\ActiveUsersTwentyEightDayWidget::class,
+            Widgets\SessionsWidget::class,
+            Widgets\SessionsDurationWidget::class,
+            Widgets\SessionsByCountryWidget::class,
+            Widgets\SessionsByDeviceWidget::class,
+            Widgets\MostVisitedPagesWidget::class,
+            Widgets\TopReferrersListWidget::class,
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            Widgets\PageViewsWidget::class,
+            Widgets\VisitorsWidget::class,
+            Widgets\ActiveUsersOneDayWidget::class,
+            Widgets\ActiveUsersSevenDayWidget::class,
+            Widgets\ActiveUsersTwentyEightDayWidget::class,
+            Widgets\SessionsWidget::class,
+            Widgets\SessionsDurationWidget::class,
+            Widgets\SessionsByCountryWidget::class,
+            Widgets\SessionsByDeviceWidget::class,
+            Widgets\MostVisitedPagesWidget::class,
+            Widgets\TopReferrersListWidget::class,
         ];
     }
 }
-
-
-

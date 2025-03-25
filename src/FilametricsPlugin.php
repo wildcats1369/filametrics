@@ -16,7 +16,7 @@ class FilametricsPlugin implements Plugin
     {
         $panel->resources([
             Resources\FilametricsSiteResource::class,
-            Resources\FilametricsAccountResource::class,
+            // Resources\FilametricsAccountResource::class,
             // Resources\FilametricsSettingResource::class,
         ]);
 

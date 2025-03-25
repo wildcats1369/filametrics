@@ -10,12 +10,12 @@ class CreateFilametricsAccountsTable extends Migration
         Schema::create('filametrics_accounts', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('site_id'); // Links to filametrics_sites
-            $table->string('name'); // Account name
+            $table->string('name', 100); // Account name
             $table->string('label')->nullable(); // Optional label
             $table->enum('type', ['text', 'numeric', 'upload']); // Type of account input
             $table->string('provider'); // Third-party provider (e.g., Google, Moz, etc.)
+            $table->text('value');
             $table->timestamps();
-
             $table->foreign('site_id')->references('id')->on('filametrics_sites')->onDelete('cascade');
         });
     }

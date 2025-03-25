@@ -15,6 +15,7 @@ class FilametricsAccount extends Model
         'label',
         'type',
         'provider',
+        'value',
     ];
 
     public function site(): BelongsTo
