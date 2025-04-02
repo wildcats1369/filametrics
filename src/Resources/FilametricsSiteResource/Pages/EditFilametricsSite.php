@@ -7,6 +7,8 @@ use wildcats1369\Filametrics\Resources\FilametricsSiteResource;
 use Log;
 use wildcats1369\Filametrics\Models\FilametricsAccount;
 use wildcats1369\Filametrics\Models\FilametricsSite;
+use Filament\Pages\Actions\Action;
+
 
 class EditFilametricsSite extends EditRecord
 {
@@ -42,13 +44,12 @@ class EditFilametricsSite extends EditRecord
 
     }
 
-
-
     protected function beforeSave(): void
     {
 
         $transformedAccounts = [];
         $data = $this->form->getState();
+        Log::info('beforSave:', $data);
         foreach ($data['account_forms'] as $account) {
             if ($account['provider'] === 'google') {
                 $transformedAccounts[] = [
@@ -79,9 +80,38 @@ class EditFilametricsSite extends EditRecord
             }
         }
         foreach ($transformedAccounts as $transformedAccount) {
-            FilametricsAccount::create($transformedAccount);
+            $account = FilametricsAccount::where('site_id', $this->record->id)
+                ->where('name', $transformedAccount['name'])
+                ->where('provider', $transformedAccount['provider'])->first();
+            Log::info("account: ".json_encode($account));
+            if (isset($account->id)) {
+                $account->save($transformedAccount);
+                Log::info("Updating account: ".json_encode($transformedAccount));
+            } else {
+                Log::info("Creating account: ".json_encode($transformedAccount));
+                FilametricsAccount::create($transformedAccount);
+            }
         }
 
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('view')
+                ->label('View')
+                ->action(function () {
+                    return redirect()->route('filament.admin.resources.filametrics-sites.view', ['record' => $this->record->id]);
+                })
+                ->icon('heroicon-o-eye')
+                ->color('primary')
+                ->button(),
+        ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('edit', ['record' => $this->record->id]);
     }
 
 

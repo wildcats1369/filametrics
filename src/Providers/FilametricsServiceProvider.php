@@ -10,13 +10,14 @@ use wildcats1369\Filametrics\Resources\FilametricsAccountResource;
 use wildcats1369\Filametrics\Resources\FilametricsSettingResource;
 use Filament\Facades\Filament;
 use wildcats1369\Filametrics\FilametricsPlugin;
-use Illuminate\Routing\Router;
-use Illuminate\Support\Facades\Route;
 use wildcats1369\Filametrics\Policies;
 use wildcats1369\Filametrics\Models;
 use Illuminate\Support\Facades\Gate;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin; // Import the Shield plugin
 use Livewire\Livewire;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
+
 
 class FilametricsServiceProvider extends PackageServiceProvider
 {
@@ -88,25 +89,22 @@ class FilametricsServiceProvider extends PackageServiceProvider
             ->register();
 
         $this->loadMigrationsFrom(__DIR__.'/../migrations');
+
+        self::registerWidgets('wildcats1369\Filametrics\Helpers\Google\Widgets', __DIR__.'/../Helpers/Google/Widgets', 'filametrics-google-widgets-');
     }
 
-    // public static function registerRoutes(Panel $panel)
-    // {
-    //     $slug = static::getResource()::getSlug();
+    public static function registerWidgets($namespace, $directory, $prefix)
+    {
+        $files = File::allFiles($directory);
 
-    //     $name = (string) str(static::$groupRouteName ?? $slug)
-    //         ->replace('/', '.')
-    //         ->append('.');
+        foreach ($files as $file) {
+            $class = $namespace.'\\'.$file->getFilenameWithoutExtension();
+            $classname = $prefix.$file->getFilenameWithoutExtension();
+            if (class_exists($class)) {
+                $componentName = Str::kebab($classname);
+                Livewire::component($componentName, $class);
+            }
+        }
+    }
 
-    //     $resourceRouteMiddlewares = static::useResourceMiddlewares() ? static::getResource()::getRouteMiddleware($panel) : [];
-
-    //     Route::name($name)
-    //         ->middleware($resourceRouteMiddlewares)
-    //         ->prefix(static::$groupRouteName ?? $slug)
-    //         ->group(function (Router $route) {
-    //             foreach (static::handlers() as $key => $handler) {
-    //                 app($handler)->route($route);
-    //             }
-    //         });
-    // }
 }

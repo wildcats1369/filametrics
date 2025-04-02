@@ -28,5 +28,12 @@ class ViewFilametricsSite extends ViewRecord
             Widgets\MostVisitedPagesWidget::class,
             Widgets\TopReferrersListWidget::class,
         ];
+
     }
+
+    public function getDescription(): ?string
+    {
+        return 'Your description here';
+    }
+
 }

@@ -14,7 +14,17 @@ use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Infolists\Infolist;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\ViewEntry;
 use wildcats1369\Filametrics\Helpers\Google\Widgets;
+use Filament\Infolists\Components\Tabs;
+use Filament\Infolists\Components\Tabs\Tab;
+use Filament\Infolists\Components\View;
+use Filament\Infolists\Components\CustomEntry;
+use Filament\Infolists\Components\Section;
+
+
+
+
 
 
 class FilametricsSiteResource extends Resource implements HasShieldPermissions
@@ -65,7 +75,7 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
                                 'moz' => 'Moz',
                             ])
                             ->label('Provider')
-                            ->default(fn ($record) => $record->provider)
+                            ->default(fn ($record) => $record->provider ?? null)
                             ->reactive()
                             ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                         // ->disableOptionWhen(fn (string $value): bool => in_array($value, $included))
@@ -101,6 +111,7 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
                 ->deleteAction(
                     fn (Action $action) => $action->requiresConfirmation(),
                 )
+                ->visible(fn ($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord)
 
             ,
 
@@ -108,6 +119,7 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
 
 
         return $form->schema($schema);
+
     }
 
     public function updatedSelectedProvider($value)
@@ -117,9 +129,16 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
 
     public static function infolist(Infolist $infolist): Infolist
     {
+        // dd($infolist->record);
         return $infolist
             ->schema([
                 TextEntry::make('domain_name')->label('Domain Name'),
+                Section::make('Section 1')
+                    ->label('Google')
+                    ->schema([
+                        ViewEntry::make('status')->view('filametrics::widgets.google.active-users-one-day', ['record' => $infolist->record]),
+                    ]),
+
             ]);
     }
 
@@ -135,14 +154,6 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('createAccount')
-                    ->label('Create Account')
-                    ->action(function ($record) {
-                        return redirect()->route('filament.admin.resources.filametrics-accounts.create', ['record' => $record->id]);
-                    })
-                    ->icon('heroicon-o-plus')
-                    ->color('success')
-                    ->button(),
             ]);
     }
 
@@ -215,4 +226,6 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
             Widgets\TopReferrersListWidget::class,
         ];
     }
+
+
 }
