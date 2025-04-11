@@ -58,6 +58,7 @@ class ActiveUsersOneDayWidget extends ChartWidget
             '10' => $this->performActiveUsersQuery('active1DayUsers', 10, $analytics),
             '15' => $this->performActiveUsersQuery('active1DayUsers', 15, $analytics),
         ];
+        
         $data = Arr::get(
             $lookups,
             $this->filter,
@@ -65,7 +66,7 @@ class ActiveUsersOneDayWidget extends ChartWidget
                 'results' => [0],
             ],
         );
-
+        
         return $data;
     }
 

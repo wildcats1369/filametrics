@@ -4,6 +4,7 @@ namespace wildcats1369\Filametrics\Traits;
 
 use Carbon\Carbon;
 use Spatie\Analytics\Period;
+use Log;
 
 trait PageViews
 {

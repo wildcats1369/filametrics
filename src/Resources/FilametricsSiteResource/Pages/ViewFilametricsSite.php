@@ -16,6 +16,7 @@ class ViewFilametricsSite extends ViewRecord
     protected function getFooterWidgets(): array
     {
         return [
+                // Widgets\ChannelGroupWidget::class,
             Widgets\PageViewsWidget::class,
             Widgets\VisitorsWidget::class,
             Widgets\ActiveUsersOneDayWidget::class,
