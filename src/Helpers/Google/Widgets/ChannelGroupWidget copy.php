@@ -18,7 +18,6 @@ class ChannelGroupWidget extends ChartWidget
 
     protected function initializeData()
     {
-        Log::info('ChannelGroupWidget initializeData called');
         // Simulate data for testing
         $data = [
             'results' => [
@@ -27,7 +26,6 @@ class ChannelGroupWidget extends ChartWidget
                 '2025-03-03' => 200,
             ],
         ];
-        Log::info(json_encode($data));
         return $data;
     }
 
@@ -43,9 +41,7 @@ class ChannelGroupWidget extends ChartWidget
 
     protected function getData(): array
     {
-        Log::info('ChannelGroupWidget getData called');
         $data = $this->initializeData();
-        Log::info(json_encode($data));
         return [
             'datasets' => [
                 [

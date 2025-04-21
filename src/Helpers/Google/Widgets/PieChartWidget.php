@@ -2,20 +2,22 @@
 
 namespace wildcats1369\Filametrics\Helpers\Google\Widgets;
 
-use BezhanSalleh\FilamentGoogleAnalytics\Traits;
+use BezhanSalleh\FilamentGoogleAnalytics\Traits\CanViewWidget;
 use Carbon\Carbon;
 use Filament\Support\RawJs;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Contracts\Support\Htmlable;
+use Log;
 use Spatie\Analytics\Facades\Analytics;
-use Spatie\Analytics\OrderBy;
 use Spatie\Analytics\Period;
 use wildcats1369\Filametrics\Models\FilametricsSite;
-use Log;
+use wildcats1369\Filametrics\Traits;
+use Spatie\Analytics\OrderBy;
 
-class SessionsByCountryWidget extends ChartWidget
+class PieChartWidget extends ChartWidget
 {
-    use Traits\CanViewWidget;
+    use CanViewWidget;
+    use Traits\HasGAFilters;
 
     protected static string $view = 'filament-google-analytics::widgets.sessions-by-category';
 
@@ -27,9 +29,17 @@ class SessionsByCountryWidget extends ChartWidget
 
     public ?string $filter = 'T';
 
-    public string $category = 'country';
+    public string $category = 'device';
 
     public ?FilametricsSite $record = null;
+
+    public $c_heading, $c_description, $period, $metric, $dimensions, $metric_filter, $dimension_filter;
+
+    public function mount(): void
+    {
+        $this->metric = is_array($this->metric) ? $this->metric : [$this->metric];
+        $this->dimensions = is_array($this->dimensions) ? $this->dimensions : [$this->dimensions];
+    }
 
     protected function getType(): string
     {
@@ -55,55 +65,30 @@ class SessionsByCountryWidget extends ChartWidget
 
     protected function initializeData()
     {
+        $period = Period::create(
+            Carbon::parse($this->period['start']),
+            Carbon::parse($this->period['end']),
+        );
+
         $lookups = [
-            'T' => Period::create(Carbon::yesterday(), Carbon::today()),
-            'Y' => Period::create(Carbon::yesterday()->clone()->subDay(), Carbon::yesterday()),
-            'LW' => Period::create(
-                Carbon::today()
-                    ->clone()
-                    ->startOfWeek(Carbon::SUNDAY)
-                    ->subWeek(),
-                Carbon::today()
-                    ->clone()
-                    ->subWeek()
-                    ->endOfWeek(Carbon::SATURDAY),
-            ),
-            'LM' => Period::create(
-                Carbon::today()
-                    ->clone()
-                    ->startOfMonth()
-                    ->subMonth(),
-                Carbon::today()
-                    ->clone()
-                    ->startOfMonth()
-                    ->subMonth()
-                    ->endOfMonth(),
-            ),
-            'LSD' => Period::create(
-                Carbon::yesterday()
-                    ->clone()
-                    ->subDays(6),
-                Carbon::yesterday(),
-            ),
-            'LTD' => Period::create(
-                Carbon::yesterday()
-                    ->clone()
-                    ->subDays(29),
-                Carbon::yesterday(),
-            ),
         ];
 
         $analyticsData = $this->record->getGoogleAnalytics()->get(
-            $lookups[$this->filter],
-            ['sessions'],
-            ['country'],
-            10,
-            [OrderBy::metric('sessions', true)],
+            $period,
+            $this->metric, // Metric
+            $this->dimensions, // Dimension
+            10, // Limit
+            [OrderBy::dimension($this->dimensions[0], true)],
+            0, //offset
+            $this->getGAFilter($this->dimension_filter),
+            false,
+            $this->getGAFilter($this->metric_filter),
         );
 
         $results = [];
+
         foreach ($analyticsData as $row) {
-            $results[str($row['country'])->studly()->append(' ('.number_format($row['sessions']).')')->toString()] = $row['sessions'];
+            $results[str($row[$this->dimensions[0]])->studly()->append(' ('.number_format($row[$this->metric[0]]).')')->toString()] = $row[$this->metric[0]];
         }
 
         $total = 0;
@@ -118,11 +103,12 @@ class SessionsByCountryWidget extends ChartWidget
 
     protected function getData(): array
     {
+
         return [
             'labels' => array_keys($this->initializeData()),
             'datasets' => [
                 [
-                    'label' => 'Country',
+                    'label' => 'Device',
                     'data' => array_map('intval', array_values($this->initializeData())),
                     'backgroundColor' => [
                         '#008FFB', '#00E396', '#feb019', '#ff455f', '#775dd0', '#80effe',

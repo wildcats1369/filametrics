@@ -4,7 +4,11 @@
     "type": "project",
     "require": {
         "bezhansalleh/filament-google-analytics": "dev-main",
-        "spatie/laravel-package-tools": "^1.19"
+        "spatie/laravel-package-tools": "^1.19",
+        "malzariey/filament-daterangepicker-filter": "dev-main",
+        "barryvdh/laravel-dompdf": "^3.1",
+        "dompdf/dompdf": "^3.1",
+        "mpdf/mpdf": "dev-development"
     },
     "autoload": {
         "psr-4": {

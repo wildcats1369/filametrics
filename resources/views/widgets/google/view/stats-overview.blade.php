@@ -84,9 +84,13 @@
     </div>
 
     <div class="grid gap-y-2 mt-4">
-        <div class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">
+        <div class="text-sm font-medium tracking-tight text-gray-950 dark:text-white">
             <!-- Ensure $value is displayed as a number -->
-            {{ is_numeric($value) ? $value : 'N/A' }}
+            @php
+                $formattedValue = (floor($value) == $value) ? number_format($value, 0) : number_format($value, 2);
+            @endphp
+
+            {{ $formattedValue }}
         </div>
 
         <div class="flex items-center gap-x-1">
@@ -102,6 +106,7 @@
                 {{ $description }}
             </span>
             <x-filament::icon :icon="$icon" :class="$descriptionIconClasses" :style="$descriptionIconStyles" />
+            <br><br>
         </div>
     </div>
 </div>

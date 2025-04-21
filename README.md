@@ -53,3 +53,6 @@ $data = Arr::get(
                 'results' => [0],
             ],
         );
+
+PDF 
+        https://raviyatechnical.medium.com/laravel-with-packages-how-to-generate-pdf-with-graph-in-laravel-a2884253b342

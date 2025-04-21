@@ -31,7 +31,6 @@ class ChannelGroupWidget extends ChartWidget
     protected function initializeData()
     {
         $analytics = $this->record->getGoogleAnalytics();
-        Log::info(json_encode('ChannelGroupWidget'));
         return $this->channelGroup('sessions', Period::days(30), $analytics);
     }
 
@@ -46,7 +45,6 @@ class ChannelGroupWidget extends ChartWidget
 
     protected function getData(): array
     {
-        Log::info(json_encode('ChannelGroupWidget getData'));
         $collection = $this->initializeData()->toArray();
 
         $labels = [];

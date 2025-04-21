@@ -27,7 +27,8 @@ class FilametricsServiceProvider extends PackageServiceProvider
             ->name('filametrics')
             ->hasConfigFile()
             ->hasMigrations()
-            ->hasRoute('web');
+            // ->hasRoute('web', base_path('src/routes/web.php'));
+        ;
     }
 
     public function getId(): string
@@ -55,6 +56,8 @@ class FilametricsServiceProvider extends PackageServiceProvider
         parent::boot();
 
         $this->loadViewsFrom(__DIR__.'/../../resources/views', 'filametrics');
+        $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+        $this->mergeConfigFrom(__DIR__.'/../Config/filametrics.php', 'filametrics');
 
         Livewire::component('filametrics-account-form', \wildcats1369\Filametrics\Http\Livewire\FilametricsAccountForm::class);
 

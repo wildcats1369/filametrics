@@ -16,6 +16,7 @@ use Carbon\Carbon;
 class BarChartH extends ChartWidget
 {
     use Traits\ChartColors;
+    use Traits\HasGAFilters;
 
     protected static ?string $pollingInterval = null;
 
@@ -44,9 +45,9 @@ class BarChartH extends ChartWidget
             10, // Limit
             [OrderBy::dimension($this->dimensions, true)],
             0, //offset
-            $this->dimension_filter,
+            $this->getGAFilter($this->dimension_filter),
             false,
-            $this->metric_filter,
+            $this->getGAFilter($this->metric_filter),
         );
 
         $metric = $this->metric;
@@ -57,7 +58,6 @@ class BarChartH extends ChartWidget
                 'value' => $dateRow[$metric],
             ];
         });
-
 
         return $data;
     }

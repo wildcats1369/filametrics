@@ -13,9 +13,9 @@ use Google\Analytics\Data\V1beta\FilterExpression;
 use Google\Analytics\Data\V1beta\Filter\StringFilter;
 use Google\Analytics\Data\V1beta\Filter\StringFilter\MatchType;
 
-trait HasDimensionFilter
+trait HasGAFilters
 {
-    public function getDimensionFilter($dimension_filter)
+    public function getGAFilter($dimension_filter)
     {
         $filter = null;
 

@@ -16,6 +16,7 @@ use Carbon\Carbon;
 class BarChartV extends ChartWidget
 {
     use Traits\ChartColors;
+    use Traits\HasGAFilters;
 
     protected static ?string $pollingInterval = null;
 
@@ -44,21 +45,12 @@ class BarChartV extends ChartWidget
             10, // Limit
             [OrderBy::dimension($this->dimensions, true)],
             0, //offset
-            $this->dimension_filter,
+            $this->getGAFilter($this->dimension_filter),
             false,
-            $this->metric_filter,
+            $this->getGAFilter($this->metric_filter),
         );
 
-        // Log the results for debugging
-        Log::info('Google Analytics API Request:', [
-            'period' => $this->period,
-            'metrics' => $this->metric,
-            'dimensions' => $this->dimensions,
-        ]);
 
-        Log::info('Google Analytics API Response:', [
-            'data' => $analyticsData,
-        ]);
         $metric = $this->metric;
         $dimensions = $this->dimensions;
         $data = collect($analyticsData ?? [])->map(function (array $dateRow) use ($metric, $dimensions) {

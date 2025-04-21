@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use wildcats1369\Filametrics\Resources\FilametricsSiteResource;
 use wildcats1369\Filametrics\Resources\FilametricsAccountResource;
 use wildcats1369\Filametrics\Resources\FilametricsSettingResource;
+use wildcats1369\Filametrics\Resources\FilametricsSiteResource\Pages\PdfFilametricSite;
 use Filament\Facades\Filament;
 
 Route::get('/filametrics', function () {
@@ -21,6 +22,14 @@ Route::middleware(['auth', 'web'])
         FilametricsSiteResource::routes($panel);
         FilametricsAccountResource::routes($panel);
         // FilametricsSettingResource::routes($panel);
+        Route::get('/filametrics-sites/{record}/pdf', [PdfFilametricSite::class, 'mount'])->name('filametrics.site.pdf');
+
     });
+
+
+
+
+
+
 
 

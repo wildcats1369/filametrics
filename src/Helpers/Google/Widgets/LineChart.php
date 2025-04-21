@@ -17,7 +17,7 @@ use Spatie\Analytics\OrderBy;
 class LineChart extends ChartWidget
 {
     use Traits\ChartColors;
-    use Traits\HasDimensionFilter;
+    use Traits\hasGAFilters;
 
     protected static ?string $pollingInterval = null;
     protected static ?int $sort = 3;
@@ -31,18 +31,17 @@ class LineChart extends ChartWidget
         $this->metric = is_array($this->metric) ? $this->metric : [$this->metric];
         $this->dimensions = is_array($this->dimensions) ? $this->dimensions : [$this->dimensions];
 
-        // $this->dimension_filter = trim($this->dimension_filter);
-        // Log::info('Dimension Filter Type:', ['type' => gettype($this->dimension_filter)]);
-        // Log::info('Dimension Filter Value:', ['value' => $this->dimension_filter]);
-
         $analytics = $this->record->getGoogleAnalytics();
         $monthlyData = collect();
-
+        $period = Period::create(
+            Carbon::parse($this->period['start']),
+            Carbon::parse($this->period['end']),
+        );
 
 
         for ($i = 0; $i < 12; $i++) {
-            $startDate = Carbon::now()->subMonths($i + 1)->startOfMonth();
-            $endDate = Carbon::now()->subMonths($i + 1)->endOfMonth();
+            $startDate = Carbon::parse($this->period['start'])->subMonths($i)->startOfMonth();
+            $endDate = Carbon::parse($this->period['start'])->subMonths($i)->endOfMonth();
             $period = Period::create($startDate, $endDate);
 
             $data = $analytics->get(
@@ -52,9 +51,9 @@ class LineChart extends ChartWidget
                 31, // Limit
                 [OrderBy::dimension($this->dimensions[0], false)],
                 0, //offset
-                $this->getDimensionFilter($this->dimension_filter),
+                $this->getGAFilter($this->dimension_filter),
                 false,
-                $this->metric_filter,
+                $this->getGAFilter($this->metric_filter),
             );
 
             $monthlyData->push([
@@ -110,11 +109,6 @@ class LineChart extends ChartWidget
             'backgroundColor' => '#007bff',
             'borderColor' => '#007bff',
         ];
-
-        Log::info("getData: ".json_encode([
-            'datasets' => $datasets,
-            'labels' => $labels,
-        ]));
 
         return [
             'datasets' => $datasets,

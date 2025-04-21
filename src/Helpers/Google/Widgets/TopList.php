@@ -19,10 +19,7 @@ use Google\Analytics\Data\V1beta\FilterExpression;
 use Google\Analytics\Data\V1beta\Filter\StringFilter;
 use Google\Analytics\Data\V1beta\Filter\StringFilter\MatchType;
 
-
-
-
-class StatsChart extends ChartWidget
+class TopList extends ChartWidget
 {
     use Traits\ChartColors;
     use Traits\SortData;
@@ -30,7 +27,7 @@ class StatsChart extends ChartWidget
 
     protected static ?string $pollingInterval = null;
 
-    protected static string $view = 'filametrics::widgets.google.view.stats-overview';
+    protected static string $view = 'filametrics::widgets.google.view.top-list-overview';
 
     protected static ?int $sort = 3;
 
@@ -78,13 +75,53 @@ class StatsChart extends ChartWidget
             ->previous($previous)
             ->format('%');
         $data = [];
-        $result = array_merge($current->toArray(), $previous_data->toArray());
-        // dd($result);
+
+        $result = $this->combineData($current->toArray(), $previous_data->toArray());
         $data['analytics'] = $analytics;
-        $data['results'] = $this->sortArrayByDate($result);
+        if ($this->dimensions[0] == 'date') {
+            $data['results'] = $this->sortArrayByDate($result);
+        } else {
+            $data['results'] = $result;
+        }
 
         return $data;
     }
+
+
+    protected function combineData($current, $previous)
+    {
+        $result = [];
+
+        // Get the union of keys from both arrays
+        $keys = array_unique(array_merge(array_keys($current), array_keys($previous)));
+
+        // Iterate over all countries and populate the result array
+        foreach ($keys as $key) {
+            $cur_val = $current[$key] ?? 0;
+            $prev_val = $previous[$key] ?? 0;
+            $data = FilamentGoogleAnalytics::for($cur_val)
+                ->previous($prev_val)
+                ->format('%');
+
+            if (is_object($data)) {
+                $datax = (array) $data;
+            } elseif (is_string($data)) {
+                $datax = json_decode($data, true);
+            }
+            $result[$cur_val.'.'.strlen($key)] = $datax;
+            $result[$cur_val.'.'.strlen($key)]['field'] = $key;
+            $result[$cur_val.'.'.strlen($key)]['icon'] = $data->trajectoryIcon();
+            $result[$cur_val.'.'.strlen($key)]['color'] = $data->trajectoryColor();
+            $result[$cur_val.'.'.strlen($key)]['description'] = $data->trajectoryDescription();
+        }
+        ksort($result);
+        // dd(array_reverse($result));
+        return array_reverse($result);
+    }
+
+
+
+
 
     protected function getPeriodData($period)
     {
@@ -135,6 +172,7 @@ class StatsChart extends ChartWidget
     {
 
         $collection = $this->initializeData();
+        return $collection['results'];
 
         $labels = [];
         $datasets = [];
