@@ -6,6 +6,7 @@ use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Filament\Panel;
 use wildcats1369\Filametrics\Resources\FilametricsSiteResource;
+use wildcats1369\Filametrics\Resources\FilametricsSiteResource\Pages\PdfFilametricSite;
 use wildcats1369\Filametrics\Resources\FilametricsAccountResource;
 use wildcats1369\Filametrics\Resources\FilametricsSettingResource;
 use Filament\Facades\Filament;
@@ -17,6 +18,7 @@ use BezhanSalleh\FilamentShield\FilamentShieldPlugin; // Import the Shield plugi
 use Livewire\Livewire;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Route;
 
 
 class FilametricsServiceProvider extends PackageServiceProvider
@@ -90,6 +92,12 @@ class FilametricsServiceProvider extends PackageServiceProvider
                 FilamentShieldPlugin::make(), // Attach the Shield plugin here
             ])
             ->register();
+
+        Filament::getPanel('filametrics')?->routes(function () {
+            Route::get('/filametrics-sites/{record}/pdf', PdfFilametricSite::class)
+                ->name('filament.admin.resources.filametrics-sites.pdf-filametric-site')
+                ->middleware([]); // No auth, no panel middleware
+        });
 
         $this->loadMigrationsFrom(__DIR__.'/../migrations');
 

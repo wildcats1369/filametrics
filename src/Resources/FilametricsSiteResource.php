@@ -35,6 +35,12 @@ use Illuminate\Support\Facades\App;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Support\Facades\Route;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Blade;
+use Spatie\Browsershot\Browsershot;
+use Illuminate\Support\Str;
+
+
 
 
 
@@ -361,6 +367,7 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+
             ]);
     }
 
@@ -371,8 +378,7 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
             'create' => Pages\CreateFilametricsSite::route('/create'),
             'edit' => Pages\EditFilametricsSite::route('/{record}/edit'),
             'view' => Pages\ViewFilametricsSite::route('/{record}'),
-
-            // 'pdf' => new Pages\PdfFilametricSite(),
+            // 'pdf' => Pages\PdfFilametricSite::route('/{record}/pdf'),
             // 'accounts' => Pages\FilametricSiteAccountPage::route('/{record}/accounts'),
         ];
     }
