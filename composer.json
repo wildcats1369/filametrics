@@ -1,7 +1,7 @@
 {
     "name": "wildcats1369/filametrics",
     "description": "Access multiple GA account in one location",
-    "type": "project",
+    "type": "library",
     "require": {
         "bezhansalleh/filament-google-analytics": "dev-main",
         "spatie/laravel-package-tools": "^1.19",
