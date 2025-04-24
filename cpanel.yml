@@ -1,0 +1,31 @@
+# cpanel.yml
+# Deployment script for Laravel plugin package (e.g., Filametrics)
+name: Deploy Filametrics Plugin
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone repository
+        run: git pull origin main
+
+      - name: Install PHP dependencies
+        run: |
+          composer install --no-dev --prefer-dist
+
+      - name: Install Node dependencies (for Puppeteer)
+        run: |
+          if [ -f package.json ]; then
+            npm install puppeteer --omit=dev
+          fi
+
+      - name: Optional: Set correct file permissions
+        run: |
+          chmod -R 755 .
+          [ -d "storage" ] && chmod -R 775 storage || echo "No storage dir"
+
+      - name: Done
+        run: echo "Plugin deployment complete"
