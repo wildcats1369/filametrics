@@ -1,13 +1,19 @@
 # cpanel.yml
-# No-op deployment script for Laravel plugin package
+# Auto-deploy plugin on push to any release/* branch
 
-name: Filametrics Plugin (No Deployment Steps Needed)
+name: Auto Deploy Filametrics Plugin from Release Branch
 
-on: [push]
+on:
+  push:
+    branches:
+      - 'release/*'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Nothing to deploy (plugin only)
-        run: echo "This is a Laravel plugin, no deploy steps required."
+      - name: Pull latest from release branch
+        run: git pull origin $(git rev-parse --abbrev-ref HEAD)
+
+      - name: Confirm deploy
+        run: echo "Filametrics plugin updated from $(git rev-parse --abbrev-ref HEAD)."
