@@ -38,7 +38,8 @@ class FilametricsSite extends Model
 
     public function getGoogleAnalytics()
     {
-        $config = array_merge($this->getAccountForms()['google'], config('filametrics'));
+        $google_forms = $this->getAccountForms()['google'] ?? [];
+        $config = array_merge($google_forms, config('filametrics'));
         $config['service_account_credentials_json'] = storage_path('app/private/'.$config['service_account_credentials_json']);
         $client = AnalyticsClientFactory::createForConfig($config);
 

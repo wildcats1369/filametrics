@@ -3,7 +3,7 @@
 namespace wildcats1369\Filametrics\Traits;
 
 use Carbon\Carbon;
-use Spatie\Analytics\Facades\Analytics;
+use wildcats1369\Filametrics\Helpers\Google\Analytics;
 use Spatie\Analytics\Period;
 
 trait Visitors

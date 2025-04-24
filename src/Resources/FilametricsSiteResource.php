@@ -21,7 +21,24 @@ use Filament\Infolists\Components\Tabs\Tab;
 use Filament\Infolists\Components\View;
 use Filament\Infolists\Components\CustomEntry;
 use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\Grid;
+use Carbon\Carbon;
+use Spatie\Analytics\Period;
+use Log;
+use Filament\Infolists\Components\Split;
+use Filament\Forms\Components\DatePicker;
+use Storage;
+use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\App;
+
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use Illuminate\Support\Facades\Route;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Blade;
+use Spatie\Browsershot\Browsershot;
+use Illuminate\Support\Str;
 
 
 
@@ -40,23 +57,227 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
     public $accounts;
     public $existing_accounts;
     public $account_forms;
+    public static $period;
+
+    public static $requestData;
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        Log::info('infolist: '.json_encode($infolist));
+        // if ($infolist->record == null)
+        //     return $infolist->schema([]);
+        $requestData = App::make('request');
+
+        $firstDayOfPreviousMonth = $requestData['start_date'] ?? Carbon::now()->subMonth()->startOfMonth()->toDateString();
+        $lastDayOfPreviousMonth = $requestData['end_date'] ?? Carbon::now()->subMonth()->endOfMonth()->toDateString();
+        $period = [
+            'start' => $firstDayOfPreviousMonth,
+            'end' => $lastDayOfPreviousMonth,
+        ];
+
+        return $infolist
+            ->schema([
+
+                TextEntry::make('domain_name')->label('Domain Name'),
+                ViewEntry::make('status')->view('filametrics::widgets.google.date-range-filter', [
+                    'startDate' => $period['start'],
+                    'endDate' => $period['end'],
+                ]),
+                self::getChannelGroupSchema($period, $infolist->record),
+                Split::make([
+                    self::getAudienceSchema($period, $infolist->record, "Overall User Acquisition"),
+                    self::getAudienceSchema($period, $infolist->record, "Chinese Market Acquisition", "country:china"),
+                ])->from('md')->columnSpan(2),
+                Split::make([
+                    self::getLanguageSchema($period, $infolist->record, "Language breakdown (All User)"),
+                    self::getLanguageSchema($period, $infolist->record, "Language breakdown (Chinese Market)", "country:china"),
+
+                ])->from('md')->columnSpan(2),
+                Split::make([
+                    self::getDeviceSchema($period, $infolist->record, "Device breakdown (All User)"),
+                    self::getDeviceSchema($period, $infolist->record, "Device breakdown (Chinese Market)", "country:china"),
+                ])->from('md')->columnSpan(2),
+                Section::make('Top Pages')
+                    ->label('Top Pages')
+                    ->schema([
+                        ViewEntry::make('status')->view('filametrics::widgets.google.top-list', [
+                            'record' => $infolist->record,
+                            'heading' => '',
+                            'description' => '',
+                            'period' => $period,
+                            'metric' => 'activeUsers',
+                            'dimensions' => 'pageReferrer',
+                            'metric_filter' => null,
+                            'dimension_filter' => null,
+                        ]),
+                    ])
+                ,
+            ]);
+    }
+
+    public static function getDeviceSchema($period, $record, $label = "", $dimension_filter = null)
+    {
+        return Section::make($label)
+            ->label($label)
+            ->schema([
+                ViewEntry::make('status')->view('filametrics::widgets.google.pie', [
+                    'record' => $record,
+                    'heading' => '',
+                    'description' => '',    // optional
+                    'period' => $period,
+                    'metric' => 'sessions',
+                    'dimensions' => 'deviceCategory',
+                    'metric_filter' => null,
+                    'dimension_filter' => $dimension_filter,
+                ]),
+                ViewEntry::make('status')->view('filametrics::widgets.google.top-list', [
+                    'record' => $record,
+                    'heading' => '',
+                    'description' => '',
+                    'period' => $period,
+                    'metric' => 'sessions',
+                    'dimensions' => 'deviceCategory',
+                    'metric_filter' => null,
+                    'dimension_filter' => $dimension_filter,
+                ]),
+            ]);
+    }
+
+    public static function getChannelGroupSchema($period, $record)
+    {
+
+        return Section::make('Analytics')
+            ->label('Google')
+            ->schema([
+                ViewEntry::make('status')->view('filametrics::widgets.google.bar-chart-h', [
+                    'record' => $record,
+                    'heading' => 'WHERE IS TRAFFIC COMING FROM?',
+                    'description' => '',
+                    'period' => $period,
+                    'metric' => 'sessions',
+                    'dimensions' => 'sessionDefaultChannelGroup',
+                    'metric_filter' => null,
+                    'dimension_filter' => null,
+                ]),
 
 
-    // public function beforeFill($record): void
-    // {
-    //     $existing_accounts = FilametricsAccount::where('site_id', $record->id)->get()->toArray();
-    //     \Log::info('beforeFill: ', $existing_accounts);
-    //     $this->existing_accounts = $existing_accounts;
-    // }
+            ]);
+    }
 
-    /*************  ✨ Codeium Command ⭐  *************/
+    public static function getAudienceSchema($period, $record, $label = "", $dimension_filter = null)
+    {
+
+        return Section::make($label)
+            ->label($label)
+            ->schema([
+                ViewEntry::make('status')->view('filametrics::widgets.google.line-chart', [
+                    'record' => $record,
+                    'heading' => 'Your audience at a glance',
+                    'description' => '',
+                    'period' => $period,
+                    'metric' => 'activeUsers',
+                    'dimensions' => 'date',
+                    'metric_filter' => null,
+                    'dimension_filter' => $dimension_filter,
+                ]),
+                Grid::make([
+                    'default' => 1,
+                    'sm' => 1,
+                    'md' => 2,
+                    'lg' => 3,
+                    'xl' => 3,
+                    '2xl' => 3,
+                ])
+                    ->schema([
+                        ViewEntry::make('status')->view('filametrics::widgets.google.stats', [
+                            'record' => $record,
+                            'heading' => 'Users',
+                            'description' => '',
+                            'period' => $period,
+                            'metric' => 'activeUsers',
+                            'dimensions' => 'date',
+                            'metric_filter' => null,
+                            'dimension_filter' => $dimension_filter,
+                        ]),
+                        ViewEntry::make('status')->view('filametrics::widgets.google.stats', [
+                            'record' => $record,
+                            'heading' => 'Sessions Per User',
+                            'description' => '',
+                            'period' => $period,
+                            'metric' => 'sessionsPerUser',
+                            'dimensions' => 'date',
+                            'metric_filter' => null,
+                            'dimension_filter' => $dimension_filter,
+                        ]),
+                        ViewEntry::make('status')->view('filametrics::widgets.google.stats', [
+                            'record' => $record,
+                            'heading' => 'Views',
+                            'description' => '',
+                            'period' => $period,
+                            'metric' => 'screenPageViews',
+                            'dimensions' => 'date',
+                            'metric_filter' => null,
+                            'dimension_filter' => $dimension_filter,
+                        ]),
+                        ViewEntry::make('status')->view('filametrics::widgets.google.stats', [
+                            'record' => $record,
+                            'heading' => 'Bounce Rate',
+                            'description' => '',
+                            'period' => $period,
+                            'metric' => 'bounceRate',
+                            'dimensions' => 'date',
+                            'metric_filter' => null,
+                            'dimension_filter' => $dimension_filter,
+                        ]),
+                    ]),
+            ]);
+
+    }
+
+    public static function getLanguageSchema($period, $record, $label = "", $dimension_filter = null)
+    {
+
+        return Section::make($label)
+            ->label($label)
+            ->schema([
+                ViewEntry::make('status')->view('filametrics::widgets.google.bar-chart-v', [
+                    'record' => $record,
+                    'heading' => '',
+                    'description' => '',
+                    'period' => $period,
+                    'metric' => 'activeUsers',
+                    'dimensions' => 'language',
+                    'metric_filter' => null,
+                    'dimension_filter' => $dimension_filter,
+                ]),
+                ViewEntry::make('status')->view('filametrics::widgets.google.top-list', [
+                    'record' => $record,
+                    'heading' => '',
+                    'description' => '',
+                    'period' => $period,
+                    'metric' => 'activeUsers',
+                    'dimensions' => 'language',
+                    'metric_filter' => null,
+                    'dimension_filter' => $dimension_filter,
+                ]),
+            ]);
+
+    }
+
+    public function mount(Request $request)
+    {
+        Log::info('Mount method called');
+        self::$requestData = $request->all();
+
+
+    }
+
     /**
      * Returns the form schema for the resource.
      *
      * @param \Filament\Forms\Form $form
      * @return \Filament\Forms\Form
      */
-    /******  81c08c5d-cee1-4fd6-b288-a41780e52470  *******/
     public static function form(Forms\Form $form): Forms\Form
     {
 
@@ -127,33 +348,26 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
         $this->selectedProvider = $value;
     }
 
-    public static function infolist(Infolist $infolist): Infolist
-    {
-        // dd($infolist->record);
-        return $infolist
-            ->schema([
-                TextEntry::make('domain_name')->label('Domain Name'),
-                Section::make('Section 1')
-                    ->label('Google')
-                    ->schema([
-                        ViewEntry::make('status')->view('filametrics::widgets.google.active-users-one-day', ['record' => $infolist->record]),
-                    ]),
 
-            ]);
-    }
 
     public static function table(Tables\Table $table): Tables\Table
     {
+
+        $firstDayOfPreviousMonth = date('Y-m-01', strtotime('first day of last month'));
+        $lastDayOfPreviousMonth = date('Y-m-t', strtotime('last day of last month'));
+
         return $table->columns([
             Tables\Columns\TextColumn::make('domain_name')->sortable()->searchable(),
             Tables\Columns\TextColumn::make('view_id'),
             Tables\Columns\BooleanColumn::make('is_visible_to_all')->label('Visible'),
             Tables\Columns\TextColumn::make('created_at')->label('Created At')->dateTime(),
             Tables\Columns\TextColumn::make('updated_at')->label('Last Updated')->dateTime(),
+
         ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+
             ]);
     }
 
@@ -164,6 +378,7 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
             'create' => Pages\CreateFilametricsSite::route('/create'),
             'edit' => Pages\EditFilametricsSite::route('/{record}/edit'),
             'view' => Pages\ViewFilametricsSite::route('/{record}'),
+            // 'pdf' => Pages\PdfFilametricSite::route('/{record}/pdf'),
             // 'accounts' => Pages\FilametricSiteAccountPage::route('/{record}/accounts'),
         ];
     }
@@ -207,24 +422,32 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
             Widgets\SessionsByDeviceWidget::class,
             Widgets\MostVisitedPagesWidget::class,
             Widgets\TopReferrersListWidget::class,
+            Widgets\ChannelGroupWidget::class,
         ];
     }
 
-    protected function getHeaderWidgets(): array
+
+    public static function downloadPDF($record)
     {
-        return [
-            Widgets\PageViewsWidget::class,
-            Widgets\VisitorsWidget::class,
-            Widgets\ActiveUsersOneDayWidget::class,
-            Widgets\ActiveUsersSevenDayWidget::class,
-            Widgets\ActiveUsersTwentyEightDayWidget::class,
-            Widgets\SessionsWidget::class,
-            Widgets\SessionsDurationWidget::class,
-            Widgets\SessionsByCountryWidget::class,
-            Widgets\SessionsByDeviceWidget::class,
-            Widgets\MostVisitedPagesWidget::class,
-            Widgets\TopReferrersListWidget::class,
+        $requestData = App::make('request');
+
+        $firstDayOfPreviousMonth = $requestData['start_date'] ?? Carbon::now()->subMonth()->startOfMonth()->toDateString();
+        $lastDayOfPreviousMonth = $requestData['end_date'] ?? Carbon::now()->subMonth()->endOfMonth()->toDateString();
+        $period = [
+            'start' => $firstDayOfPreviousMonth,
+            'end' => $lastDayOfPreviousMonth,
         ];
+
+        // Render the infolist view
+        $infolistView = view('filament.resources.filametrics-site-resource.infolist', [
+            'record' => $record,
+            'period' => $period,
+        ])->render();
+
+        // Generate the PDF
+        $pdf = PDF::loadHTML($infolistView);
+
+        return $pdf->download('widgets.pdf');
     }
 
 
