@@ -15,4 +15,9 @@ class CreateFilametricsSite extends CreateRecord
         $data['user_id'] = auth()->id(); // Set the user_id from the logged-in user
         return $data;
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('edit', ['record' => $this->record]);
+    }
 }

@@ -98,6 +98,11 @@ class FilametricsServiceProvider extends PackageServiceProvider
                 ->name('filament.admin.resources.filametrics-sites.pdf-filametric-site')
                 ->middleware([]); // No auth, no panel middleware
         });
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \wildcats1369\Filametrics\Commands\InstallCommand::class,
+            ]);
+        }
 
         $this->loadMigrationsFrom(__DIR__.'/../migrations');
 

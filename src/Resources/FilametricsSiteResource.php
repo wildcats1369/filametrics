@@ -293,7 +293,6 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
                         Forms\Components\Select::make('provider')
                             ->options([
                                 'google' => 'Google',
-                                'moz' => 'Moz',
                             ])
                             ->label('Provider')
                             ->default(fn ($record) => $record->provider ?? null)
@@ -367,6 +366,10 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->requiresConfirmation()
+                    ->modalHeading(fn ($record) => 'Delete '.$record->domain_name)
+                    ->modalDescription('Are you sure you would like to do this?'),
 
             ]);
     }
@@ -449,6 +452,8 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
 
         return $pdf->download('widgets.pdf');
     }
+
+
 
 
 }

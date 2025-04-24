@@ -58,7 +58,7 @@ Follow [this quick guide](https://console.cloud.google.com/apis/credentials) to 
 
 > **Make sure to:**
 > - Share GA property access with the Service Account email (Viewer role)
-> - Save the JSON file to `storage/app/analytics/service-account.json`
+> - Save the JSON file, you need to upload it to the system later.
 
 ### 2. Get your GA4 Property ID
 
@@ -76,7 +76,7 @@ Go to **Filametrics > Sites** in Filament admin panel.
 Fill in:
 - **Site Name** (whatever you want)
 - **Property ID** (from GA)
-- **Measurement ID** (from GA)
+
 
 ### Step 2: Add GA Credentials
 
@@ -91,7 +91,7 @@ Hit **Save**.
 1. Visit the **public PDF page** for your Site:
 
 ```
-http://your-app.test/filametrics/pdf/{site-slug}
+http://your-app.test/filametrics/{site-id}/pdf
 ```
 
 2. It renders a Filament Page with charts + infolists (publicly accessible).

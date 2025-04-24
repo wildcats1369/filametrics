@@ -20,6 +20,11 @@
             ]
         }
     },
+    "scripts": {
+        "post-autoload-dump": [
+            "@php artisan filametrics:install"
+        ]
+    },
     "authors": [
         {
             "name": "MRR",
