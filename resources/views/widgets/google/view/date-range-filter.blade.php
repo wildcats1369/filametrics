@@ -1,13 +1,13 @@
-<form id="date-range-form" class="space-y-4 p-4 bg-white shadow rounded-lg">
+<form id="date-range-form" class="space-y-4 p-4 bg-white shadow rounded-lg dark:bg-gray-900 dark:shadow-md">
     <div class="flex flex-col">
-        <label for="start_date" class="mb-2 text-sm font-medium text-gray-700">Start Date:</label>
+        <label for="start_date" class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Start Date:</label>
         <input type="date" id="start_date" wire:model="startDate"
-            class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-400">
     </div>
     <div class="flex flex-col">
-        <label for="end_date" class="mb-2 text-sm font-medium text-gray-700">End Date:</label>
+        <label for="end_date" class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">End Date:</label>
         <input type="date" id="end_date" wire:model="endDate"
-            class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-blue-400">
     </div>
     <button type="button" onclick="submitDateRangeForm()"
         style="--c-400:var(--primary-400);--c-500:var(--primary-500);--c-600:var(--primary-600);"
