@@ -98,19 +98,38 @@ class ViewFilametricsSite extends ViewRecord
                     $sessionValue = session()->getId();
                     $cookieDomain = parse_url(config('app.url'), PHP_URL_HOST);
 
-                    Browsershot::url($url)
-                        ->waitUntilNetworkIdle()
-                        ->setOption('args', ['--no-sandbox'])
-                        ->setCookies([
-                            [
-                                'name' => $sessionName,
-                                'value' => $sessionValue,
-                                'domain' => $cookieDomain,
-                            ],
-                        ])
-                        ->format('A4')
-                        ->timeout(60)
-                        ->savePdf($path);
+                    if (env('CHROME_PATH')) {
+                        Browsershot::url($url)
+                            ->waitUntilNetworkIdle()
+                            ->setChromePath(env('CHROME_PATH'))
+                            ->setOption('args', ['--no-sandbox'])
+                            ->setCookies([
+                                [
+                                    'name' => $sessionName,
+                                    'value' => $sessionValue,
+                                    'domain' => $cookieDomain,
+                                ],
+                            ])
+                            ->format('A4')
+                            ->timeout(60)
+                            ->savePdf($path);
+                    } else {
+                        Browsershot::url($url)
+                            ->waitUntilNetworkIdle()
+                            ->setOption('args', ['--no-sandbox'])
+                            ->setCookies([
+                                [
+                                    'name' => $sessionName,
+                                    'value' => $sessionValue,
+                                    'domain' => $cookieDomain,
+                                ],
+                            ])
+                            ->format('A4')
+                            ->timeout(60)
+                            ->savePdf($path);
+                    }
+
+
 
                     return response()->download($path)->deleteFileAfterSend();
                 })
