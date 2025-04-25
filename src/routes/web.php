@@ -17,7 +17,7 @@ Route::get('/filametrics', function () {
 
 Route::middleware(['auth', 'web'])
     ->name('filament.admin.resources.')
-    ->prefix('/') // Adjust the prefix as needed
+    ->prefix(config('filament.path', '/')) // Adjust the prefix as needed
     ->group(function () {
         // Retrieve the panel instance
         $panel = Filament::getPanel('filametrics'); // Ensure 'filametrics' matches the panel ID

@@ -42,9 +42,10 @@ class FilametricsServiceProvider extends PackageServiceProvider
     {
         return $panel
             ->id('filametrics')
+            ->path(config('filament.path', '/'))
             ->resources([
                 FilametricsSiteResource::class,
-                FilametricsAccountResource::class,
+                // FilametricsAccountResource::class,
                 // FilametricsSettingResource::class,
             ])
             ->plugins([
