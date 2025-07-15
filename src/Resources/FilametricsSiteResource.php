@@ -12,6 +12,7 @@ use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use wildcats1369\Filametrics\Resources\FilametricsSiteResource\RelationManagers\FilametricsAccountRelationManager;
 use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Forms\Components\Actions\Action;
+use Filament\Tables\Actions\Action as Taction;
 use Filament\Infolists\Infolist;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ViewEntry;
@@ -29,9 +30,8 @@ use Filament\Infolists\Components\Split;
 use Filament\Forms\Components\DatePicker;
 use Storage;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\App;
-
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Support\Facades\Route;
@@ -39,6 +39,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Blade;
 use Spatie\Browsershot\Browsershot;
 use Illuminate\Support\Str;
+use Filament\Actions\Action as cAction;
 
 
 
@@ -370,6 +371,12 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
                     ->requiresConfirmation()
                     ->modalHeading(fn ($record) => 'Delete '.$record->domain_name)
                     ->modalDescription('Are you sure you would like to do this?'),
+                Taction::make('predict')
+                    ->label('Predict')
+                    ->icon('heroicon-o-light-bulb')
+                    ->url(fn ($record) => "filametrics-sites/{$record->getKey()}/predict")
+                    ->openUrlInNewTab() // optional
+                    ->color('primary'),
 
             ]);
     }
@@ -381,10 +388,12 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
             'create' => Pages\CreateFilametricsSite::route('/create'),
             'edit' => Pages\EditFilametricsSite::route('/{record}/edit'),
             'view' => Pages\ViewFilametricsSite::route('/{record}'),
+            // 'predict' => Pages\PredictFilametricsSite::class,
             // 'pdf' => Pages\PdfFilametricSite::route('/{record}/pdf'),
             // 'accounts' => Pages\FilametricSiteAccountPage::route('/{record}/accounts'),
         ];
     }
+
 
     // public static function getRelations(): array
     // {
@@ -451,6 +460,38 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
         $pdf = PDF::loadHTML($infolistView);
 
         return $pdf->download('widgets.pdf');
+    }
+
+    protected function afterSave(): void
+    {
+        $site = $this->record;
+
+        foreach ($this->data['account_forms'] ?? [] as $account) {
+            if (($account['provider'] ?? null) === 'google') {
+                $apiHost = env('PREDICT_API_HOST', 'http://127.0.0.1:5000');
+                $propertyId = $account['property_id'] ?? null;
+                $jsonPath = storage_path('app/analytics/'.$account['service_account_credentials_json']);
+
+                if ($propertyId && file_exists($jsonPath)) {
+                    try {
+                        $response = Http::attach(
+                            'file', file_get_contents($jsonPath), $propertyId.'_ga_service_account.json'
+                        )->asMultipart()->post($apiHost.'/upload-credential', [
+                                    'property_id' => $propertyId,
+                                    // 'force_update' => 1, // Optional toggle
+                                ]);
+
+                        if ($response->failed()) {
+                            filament()->notify('danger', 'Upload to Predictor API failed for '.$propertyId);
+                        } else {
+                            filament()->notify('success', 'Uploaded credentials for '.$propertyId);
+                        }
+                    } catch (\Exception $e) {
+                        filament()->notify('danger', 'Error uploading credential: '.$e->getMessage());
+                    }
+                }
+            }
+        }
     }
 
 

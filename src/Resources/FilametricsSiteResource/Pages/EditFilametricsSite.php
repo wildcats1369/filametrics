@@ -8,6 +8,8 @@ use Log;
 use wildcats1369\Filametrics\Models\FilametricsAccount;
 use wildcats1369\Filametrics\Models\FilametricsSite;
 use Filament\Pages\Actions\Action;
+use Illuminate\Support\Facades\Http;
+use Filament\Notifications\Notification;
 
 
 class EditFilametricsSite extends EditRecord
@@ -112,6 +114,61 @@ class EditFilametricsSite extends EditRecord
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('edit', ['record' => $this->record->id]);
+    }
+
+    protected function afterSave(): void
+    {
+        $site = $this->record;
+
+        foreach ($this->data['account_forms'] ?? [] as $account) {
+
+            $files = $account['service_account_credentials_json'] ?? [];
+            $firstFile = null;
+
+            if (is_array($files) && count($files) > 0) {
+                $firstFile = reset($files); // Gets the first value regardless of key
+            }
+
+            if (($account['provider'] ?? null) === 'google') {
+                $apiHost = env('PREDICT_API_HOST', 'http://127.0.0.1:5000');
+                $propertyId = $account['property_id'] ?? null;
+                $jsonPath = storage_path('app/private/'.$firstFile);
+
+                if ($propertyId && file_exists($jsonPath)) {
+                    try {
+                        $response = Http::attach(
+                            'file', file_get_contents($jsonPath), $propertyId.'_ga_service_account.json'
+                        )->asMultipart()->post($apiHost.'/upload-credential', [
+                                    'property_id' => $propertyId,
+                                    // 'force_update' => 1, // Optional toggle
+                                ]);
+
+                        if ($response->failed()) {
+                            Notification::make()
+                                ->title('Uploaded')
+                                ->body('Upload to Predictor API failed for '.$propertyId)
+                                ->danger()
+                                ->send();
+                            // filament()->notify('danger', 'Upload to Predictor API failed for '.$propertyId);
+                        } else {
+                            Notification::make()
+                                ->title('Uploaded')
+                                ->body('Uploaded credentials for '.$propertyId)
+                                ->success()
+                                ->send();
+                            // filament()->notify('success', 'Uploaded credentials for '.$propertyId);
+                        }
+                    } catch (\Exception $e) {
+                        Notification::make()
+                            ->title('Uploaded')
+                            ->body('Error uploading credential: '.$e->getMessage())
+                            ->danger()
+                            ->send();
+                        // filament()->notify('danger', 'Error uploading credential: '.$e->getMessage());
+                    }
+                }
+            }
+        }
     }
 
 

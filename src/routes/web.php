@@ -5,6 +5,7 @@ use wildcats1369\Filametrics\Resources\FilametricsSiteResource;
 use wildcats1369\Filametrics\Resources\FilametricsAccountResource;
 use wildcats1369\Filametrics\Resources\FilametricsSettingResource;
 use wildcats1369\Filametrics\Resources\FilametricsSiteResource\Pages\PdfFilametricSite;
+use wildcats1369\Filametrics\Resources\FilametricsSiteResource\Pages\PredictFilametricsSite;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Auth;
@@ -26,6 +27,9 @@ Route::middleware(['auth', 'web'])
         FilametricsSiteResource::routes($panel);
         FilametricsAccountResource::routes($panel);
 
+        // Add your custom route here:
+        Route::get('/filametrics-sites/{record}/predict', PredictFilametricsSite::class)
+            ->name('filametrics-sites.predict');
 
     });
 
