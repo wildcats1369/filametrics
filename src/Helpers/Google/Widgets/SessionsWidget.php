@@ -63,6 +63,7 @@ class SessionsWidget extends ChartWidget
             ],
         );
 
+
         return FilamentGoogleAnalytics::for($data['result'])
             ->previous($data['previous'])
             ->format('%');
@@ -70,6 +71,7 @@ class SessionsWidget extends ChartWidget
 
     protected function getData(): array
     {
+        // dd($this->initializeData(), $this->initializeData()->trajectoryValue(), $this->initializeData()->trajectoryIcon(), $this->initializeData()->trajectoryColor(), $this->initializeData()->trajectoryDescription());
         return [
             'value' => $this->initializeData()->trajectoryValue(),
             'icon' => $this->initializeData()->trajectoryIcon(),

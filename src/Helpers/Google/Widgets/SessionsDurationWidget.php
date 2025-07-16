@@ -78,6 +78,7 @@ class SessionsDurationWidget extends ChartWidget
         ];
     }
 
+
     protected function getType(): string
     {
         return 'line';

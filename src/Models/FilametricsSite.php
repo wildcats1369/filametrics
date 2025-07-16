@@ -27,7 +27,7 @@ class FilametricsSite extends Model
 
     public function getAccountForms()
     {
-
+        $account_forms = [];
         foreach ($this->accounts as $account) {
             $account_forms[$account['provider']]['provider'] = $account['provider'];
             $account_forms[$account['provider']][$account['name']] = $account['value'];
@@ -38,11 +38,16 @@ class FilametricsSite extends Model
 
     public function getGoogleAnalytics()
     {
-        $config = array_merge($this->getAccountForms()['google'], config('filametrics'));
-        $config['service_account_credentials_json'] = storage_path('app/private/'.$config['service_account_credentials_json']);
-        $client = AnalyticsClientFactory::createForConfig($config);
+        $google_forms = $this->getAccountForms()['google'] ?? [];
+        if (! empty($google_forms)) {
+            $config = array_merge($google_forms, config('filametrics'));
+            $config['service_account_credentials_json'] = storage_path('app/private/'.$config['service_account_credentials_json']);
+            $client = AnalyticsClientFactory::createForConfig($config);
 
-        return new Analytics($client, $config['property_id']);
+            return new Analytics($client, $config['property_id']);
+        }
+
+        return null;
 
     }
 }

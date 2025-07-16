@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Filament\Support\RawJs;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Contracts\Support\Htmlable;
+use Log;
 use Spatie\Analytics\Facades\Analytics;
 use Spatie\Analytics\Period;
 use wildcats1369\Filametrics\Models\FilametricsSite;
@@ -116,6 +117,7 @@ class SessionsByDeviceWidget extends ChartWidget
 
     protected function getData(): array
     {
+
         return [
             'labels' => array_keys($this->initializeData()),
             'datasets' => [

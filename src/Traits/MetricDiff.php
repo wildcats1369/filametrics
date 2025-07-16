@@ -4,7 +4,7 @@ namespace wildcats1369\Filametrics\Traits;
 
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use Spatie\Analytics\Facades\Analytics;
+use wildcats1369\Filametrics\Helpers\Google\Analytics;
 use Spatie\Analytics\OrderBy;
 use Spatie\Analytics\Period;
 

@@ -1,0 +1,19 @@
+# cpanel.yml
+# Auto-deploy plugin on push to any release/* branch
+
+name: Auto Deploy Filametrics Plugin from Release Branch
+
+on:
+  push:
+    branches:
+      - 'release/*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull latest from release branch
+        run: git pull origin $(git rev-parse --abbrev-ref HEAD)
+
+      - name: Confirm deploy
+        run: echo "Filametrics plugin updated from $(git rev-parse --abbrev-ref HEAD)."

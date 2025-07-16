@@ -56,7 +56,12 @@ class TopReferrersListWidget extends ChartWidget
             10,
             [OrderBy::dimension('activeUsers', true)],
         );
-
+        // dd($analyticsData->map(function (array $pageRow) {
+        //     return [
+        //         'url' => $pageRow['pageReferrer'],
+        //         'pageViews' => (int) $pageRow['activeUsers'],
+        //     ];
+        // })->all());
         return $analyticsData->map(function (array $pageRow) {
             return [
                 'url' => $pageRow['pageReferrer'],

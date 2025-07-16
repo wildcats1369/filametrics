@@ -11,6 +11,7 @@ use Spatie\Analytics\Facades\Analytics;
 use Spatie\Analytics\OrderBy;
 use Spatie\Analytics\Period;
 use wildcats1369\Filametrics\Models\FilametricsSite;
+use Log;
 
 class SessionsByCountryWidget extends ChartWidget
 {

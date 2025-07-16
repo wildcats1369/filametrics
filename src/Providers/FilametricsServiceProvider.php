@@ -6,6 +6,7 @@ use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Filament\Panel;
 use wildcats1369\Filametrics\Resources\FilametricsSiteResource;
+use wildcats1369\Filametrics\Resources\FilametricsSiteResource\Pages\PdfFilametricSite;
 use wildcats1369\Filametrics\Resources\FilametricsAccountResource;
 use wildcats1369\Filametrics\Resources\FilametricsSettingResource;
 use Filament\Facades\Filament;
@@ -17,6 +18,7 @@ use BezhanSalleh\FilamentShield\FilamentShieldPlugin; // Import the Shield plugi
 use Livewire\Livewire;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Route;
 
 
 class FilametricsServiceProvider extends PackageServiceProvider
@@ -27,7 +29,8 @@ class FilametricsServiceProvider extends PackageServiceProvider
             ->name('filametrics')
             ->hasConfigFile()
             ->hasMigrations()
-            ->hasRoute('web');
+            // ->hasRoute('web', base_path('src/routes/web.php'));
+        ;
     }
 
     public function getId(): string
@@ -39,9 +42,10 @@ class FilametricsServiceProvider extends PackageServiceProvider
     {
         return $panel
             ->id('filametrics')
+            ->path(config('filament.path', '/'))
             ->resources([
                 FilametricsSiteResource::class,
-                FilametricsAccountResource::class,
+                // FilametricsAccountResource::class,
                 // FilametricsSettingResource::class,
             ])
             ->plugins([
@@ -55,6 +59,8 @@ class FilametricsServiceProvider extends PackageServiceProvider
         parent::boot();
 
         $this->loadViewsFrom(__DIR__.'/../../resources/views', 'filametrics');
+        $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+        $this->mergeConfigFrom(__DIR__.'/../Config/filametrics.php', 'filametrics');
 
         Livewire::component('filametrics-account-form', \wildcats1369\Filametrics\Http\Livewire\FilametricsAccountForm::class);
 
@@ -87,6 +93,17 @@ class FilametricsServiceProvider extends PackageServiceProvider
                 FilamentShieldPlugin::make(), // Attach the Shield plugin here
             ])
             ->register();
+
+        Filament::getPanel('filametrics')?->routes(function () {
+            Route::get('/filametrics-sites/{record}/pdf', PdfFilametricSite::class)
+                ->name('filament.admin.resources.filametrics-sites.pdf-filametric-site')
+                ->middleware([]); // No auth, no panel middleware
+        });
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \wildcats1369\Filametrics\Commands\InstallCommand::class,
+            ]);
+        }
 
         $this->loadMigrationsFrom(__DIR__.'/../migrations');
 
