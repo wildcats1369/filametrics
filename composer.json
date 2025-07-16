@@ -5,7 +5,7 @@
   "require": {
     "bezhansalleh/filament-google-analytics": "dev-main",
     "spatie/laravel-package-tools": "^1.19",
-    "malzariey/filament-daterangepicker-filter": "dev-main",
+    "malzariey/filament-daterangepicker-filter": "^3.4.3",
     "spatie/browsershot": "dev-main"
   },
   "autoload": {
