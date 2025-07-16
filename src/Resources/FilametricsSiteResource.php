@@ -30,7 +30,6 @@ use Filament\Infolists\Components\Split;
 use Filament\Forms\Components\DatePicker;
 use Storage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\App;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -462,37 +461,7 @@ class FilametricsSiteResource extends Resource implements HasShieldPermissions
         return $pdf->download('widgets.pdf');
     }
 
-    protected function afterSave(): void
-    {
-        $site = $this->record;
 
-        foreach ($this->data['account_forms'] ?? [] as $account) {
-            if (($account['provider'] ?? null) === 'google') {
-                $apiHost = env('PREDICT_API_HOST', 'http://127.0.0.1:5000');
-                $propertyId = $account['property_id'] ?? null;
-                $jsonPath = storage_path('app/analytics/'.$account['service_account_credentials_json']);
-
-                if ($propertyId && file_exists($jsonPath)) {
-                    try {
-                        $response = Http::attach(
-                            'file', file_get_contents($jsonPath), $propertyId.'_ga_service_account.json'
-                        )->asMultipart()->post($apiHost.'/upload-credential', [
-                                    'property_id' => $propertyId,
-                                    // 'force_update' => 1, // Optional toggle
-                                ]);
-
-                        if ($response->failed()) {
-                            filament()->notify('danger', 'Upload to Predictor API failed for '.$propertyId);
-                        } else {
-                            filament()->notify('success', 'Uploaded credentials for '.$propertyId);
-                        }
-                    } catch (\Exception $e) {
-                        filament()->notify('danger', 'Error uploading credential: '.$e->getMessage());
-                    }
-                }
-            }
-        }
-    }
 
 
 

@@ -6,7 +6,7 @@ use Filament\Pages\Page;
 use Illuminate\Support\Facades\Http;
 use wildcats1369\Filametrics\Models\FilametricsSite;
 use wildcats1369\Filametrics\Resources\FilametricsSiteResource;
-
+use wildcats1369\Filametrics\Helpers\JwtTokenService;
 class PredictFilametricsSite extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-list-bullet';
@@ -22,9 +22,16 @@ class PredictFilametricsSite extends Page
     {
         $payload = [
             'property_id' => $this->record->view_id ?? '373507543',
+            'timestamp' => time(), // Current UNIX timestamp (seconds)
+            'date' => date('Y-m-d', strtotime('+1 week')),
         ];
+        $jwtService = new JwtTokenService();
+        $token = $jwtService->generateToken($payload);
 
-        $response = Http::post(env('PREDICT_API_HOST', 'http://127.0.0.1:5000').'/predict', $payload);
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer '.$token,
+            'Accept' => 'application/json',
+        ])->post(env('PREDICT_API_HOST', 'http://127.0.0.1:5000').'/predict', $payload);
 
         if (! $response->successful()) {
             return [
