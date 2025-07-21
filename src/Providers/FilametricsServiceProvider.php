@@ -102,6 +102,7 @@ class FilametricsServiceProvider extends PackageServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 \wildcats1369\Filametrics\Commands\InstallCommand::class,
+                \wildcats1369\Filametrics\Commands\FilametricsSync::class,
             ]);
         }
 
