@@ -52,37 +52,52 @@ npm install puppeteer --save
 
 ## Setting up Google Analytics 🎛️
 
-### 1. Generate Service Account & JSON
+### 1. Make a Service Account & Download the Magic JSON Key 📄✨
 
-Follow [this quick guide](https://console.cloud.google.com/apis/credentials) to create a Service Account + JSON key.
+This “JSON file” is like the *secret key* that lets our system talk to Google Analytics for you. Think of it like a house key — you don’t share it with strangers, but you need it to open the door.
 
-> **Make sure to:**
-> - Share GA property access with the Service Account email (Viewer role)
-> - Save the JSON file, you need to upload it to the system later.
+#### Step-by-Step (no skipping!):
 
-### 2. Get your GA4 Property ID
+1. **Go to Google Cloud Console:**  
+   👉 [https://console.cloud.google.com/iam-admin/serviceaccounts](https://console.cloud.google.com/iam-admin/serviceaccounts)  
+   *(You may need to sign in with your Google account.)*
 
-1. Go to [analytics.google.com](https://analytics.google.com/)
-2. Admin → Property Settings → **Measurement ID** (ex: `G-XXXXXXXXXX`)
+2. **Pick the right project:**  
+   - On the top left, click the project drop-down.  
+   - Select the project where your Analytics lives.
 
-## How to Create a Site in Filametrics 🌐
+3. **Find your service account:**  
+   - You should see the service account you already created.  
+   - If not, click **Create Service Account** and give it a name like `analytics-service`.
 
-After installing, you can create a "Site" to link a Google Analytics property.
+4. **Add a key (the JSON):**  
+   - On the service account row, click the three dots `⋮` → **Manage Keys**.  
+   - Click **Add Key → Create new key**.  
+   - Choose **JSON**.  
+   - A `.json` file will download to your computer. 🎉  
+   - **Save this file in a safe place** (you’ll upload it later to our system).
 
-### Step 1: Create a Site Record
+> ⚠️ Important: Don’t share this file with anyone, don’t put it on GitHub. Treat it like your password.
 
-Go to **Filametrics > Sites** in Filament admin panel.
+5. **Give the service account access to your GA property:**  
+   - Go to [Google Analytics](https://analytics.google.com/).  
+   - Click **Admin** (gear icon, bottom left).  
+   - Under **Property**, click **Property Access Management**.  
+   - Click **+ → Add users**.  
+   - Paste your service account email (it looks like `name@project-id.iam.gserviceaccount.com`).  
+   - Make sure you select the **Viewer** role.  
+   - Click **Add**.  
 
-Fill in:
-- **Site Name** (whatever you want)
-- **Property ID** (from GA)
+---
 
+### 2. Find Your GA4 Property ID 🔍
 
-### Step 2: Add GA Credentials
+We also need your “GA property ID” — this tells us which Analytics property to read.
 
-Upload the Service Account JSON to the **Site** form.
-
-Hit **Save**.
+1. Go to [analytics.google.com](https://analytics.google.com/).  
+2. Click **Admin** (gear icon, bottom left).  
+3. Under **Property Settings**, look for **Measurement ID** (it looks like `G-XXXXXXXXXX`).  
+4. Copy that value, you’ll paste it into our system later.
 
 ---
 
