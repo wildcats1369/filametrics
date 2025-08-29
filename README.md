@@ -61,7 +61,7 @@ This “JSON file” is like the *secret key* that lets our system talk to Googl
 1. **Go to Google Cloud Console:**  
    👉 [https://console.cloud.google.com/iam-admin/serviceaccounts](https://console.cloud.google.com/iam-admin/serviceaccounts)  
    *(You may need to sign in with your Google account.)*
-   ![alt text](./docs/Screenshot 2025-08-29 092911.png)
+   ![alt text](./doc/Screenshot 2025-08-29 092911.png)
 
 2. **Pick the right project:**  
    - On the top left, click the project drop-down.  
@@ -70,9 +70,9 @@ This “JSON file” is like the *secret key* that lets our system talk to Googl
 3. **Find your service account:**  
    - You should see the service account you already created.  
    - If not, click **Create Service Account** and give it a name like `service-account`.
-   ![alt text](./docs/Screenshot 2025-08-29 093024.png)
-   ![alt text](./docs/Screenshot 2025-08-29 093220.png)
-   ![alt text](./docs/Screenshot 2025-08-29 093300.png)
+   ![alt text](./doc/Screenshot 2025-08-29 093024.png)
+   ![alt text](./doc/Screenshot 2025-08-29 093220.png)
+   ![alt text](./doc/Screenshot 2025-08-29 093300.png)
 
 4. **Add a key (the JSON):**  
    - On the service account row, click the three dots `⋮` → **Manage Keys**.  
@@ -80,9 +80,9 @@ This “JSON file” is like the *secret key* that lets our system talk to Googl
    - Choose **JSON**.  
    - A `.json` file will download to your computer. 🎉  
    - **Save this file in a safe place** (you’ll upload it later to our system).
-   ![alt text](./docs/Screenshot 2025-08-29 093356.png)
-   ![alt text](./docs/Screenshot 2025-08-29 093406.png)
-   ![alt text](./docs/Screenshot 2025-08-29 094014.png)
+   ![alt text](./doc/Screenshot 2025-08-29 093356.png)
+   ![alt text](./doc/Screenshot 2025-08-29 093406.png)
+   ![alt text](./doc/Screenshot 2025-08-29 094014.png)
 
 > ⚠️ Important: Don’t share this file with anyone, don’t put it on GitHub. Treat it like your password.
 
@@ -94,8 +94,8 @@ This “JSON file” is like the *secret key* that lets our system talk to Googl
    - Paste your service account email (it looks like `name@project-id.iam.gserviceaccount.com`).  
    - Make sure you select the **Viewer** role.  
    - Click **Add**.  
-   ![alt text](./docs/Screenshot 2025-08-29 093517.png)
-   ![alt text](./docs/Screenshot 2025-08-29 093712.png)
+   ![alt text](./doc/Screenshot 2025-08-29 093517.png)
+   ![alt text](./doc/Screenshot 2025-08-29 093712.png)
 
 ---
 ### 2. Find Your GA4 Property ID 🔍
@@ -106,8 +106,8 @@ We also need your “GA property ID” — this tells us which Analytics propert
 2. Click **Admin** (gear icon, bottom left).  
 3. Under **Property Settings**, look for PROPERTY ID: 46XXXXXXXXXXX.  
 4. Copy that value, you’ll paste it into our system later.
-![alt text](./docs/Screenshot 2025-08-29 094459.png)
-![alt text](./docs/Screenshot 2025-08-29 094746.png)
+![alt text](./doc/Screenshot 2025-08-29 094459.png)
+![alt text](./doc/Screenshot 2025-08-29 094746.png)
 ---
 
 ## How to Export a PDF 📄
